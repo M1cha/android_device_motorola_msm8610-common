@@ -66,9 +66,9 @@ etc/Speaker_cal.acdb
 -framework/qcrilhook.jar
 
 # HAL
-lib/hw/audio.primary.msm8226.so
-lib/hw/camera.msm8226.so
-lib/hw/sensors.msm8226.so
+lib/hw/audio.primary.msm8610.so
+lib/hw/camera.msm8610.so
+lib/hw/sensors.msm8610.so
 
 # Libs
 lib/rfsa/adsp/libadsp_denoise_skel.so

@@ -20,7 +20,7 @@
 # are responsible for having their own logic, for fine-grained control.
 
 ifeq ($(BOARD_VENDOR),motorola-qcom)
-ifeq ($(TARGET_BOARD_PLATFORM),msm8226)
+ifeq ($(TARGET_BOARD_PLATFORM),msm8610)
 
 LOCAL_PATH := $(call my-dir)
 

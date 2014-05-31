@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-LOCAL_PATH := device/motorola/msm8226-common
+LOCAL_PATH := device/motorola/msm8610-common
 
 # Permissions
 PRODUCT_COPY_FILES += \
@@ -23,7 +23,7 @@ DEVICE_PACKAGE_OVERLAYS += $(LOCAL_PATH)/overlay
 
 # Audio
 PRODUCT_PACKAGES += \
-    audio_policy.msm8226 \
+    audio_policy.msm8610 \
     libaudioparameter \
     libqcomvisualizer \
     libqcomvoiceprocessing
@@ -43,14 +43,14 @@ PRODUCT_PACKAGES += \
 
 # HAL
 PRODUCT_PACKAGES += \
-    copybit.msm8226\
-    gps.msm8226 \
-    gralloc.msm8226 \
-    hwcomposer.msm8226 \
-    keystore.msm8226 \
-    lights.MSM8226 \
-    memtrack.msm8226 \
-    power.msm8226
+    copybit.msm8610 \
+    gps.msm8610 \
+    gralloc.msm8610 \
+    hwcomposer.msm8610 \
+    keystore.msm8610 \
+    lights.MSM8610 \
+    memtrack.msm8610 \
+    power.msm8610
 
 # QRNG
 PRODUCT_PACKAGES += qrngp
@@ -65,8 +65,8 @@ PRODUCT_PACKAGES += \
 
 # Wifi
 PRODUCT_COPY_FILES += \
-    kernel/motorola/msm8226/drivers/net/wireless/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
-    kernel/motorola/msm8226/drivers/net/wireless/prima/firmware_bin/WCNSS_qcom_cfg.ini:system/etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini \
+    kernel/motorola/msm8610/drivers/net/wireless/prima/firmware_bin/WCNSS_cfg.dat:system/etc/firmware/wlan/prima/WCNSS_cfg.dat \
+    kernel/motorola/msm8610/drivers/net/wireless/prima/firmware_bin/WCNSS_qcom_cfg.ini:system/etc/firmware/wlan/prima/WCNSS_qcom_cfg.ini \
     $(LOCAL_PATH)/config/WCNSS_qcom_wlan_nv.bin:system/etc/firmware/wlan/prima/WCNSS_qcom_wlan_nv.bin
 
 # Symlinks
