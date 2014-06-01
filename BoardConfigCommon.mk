@@ -82,7 +82,7 @@ TARGET_HW_DISK_ENCRYPTION := true
 BOARD_HARDWARE_CLASS := device/motorola/msm8610-common/cmhw/
 
 # Assert
-TARGET_OTA_ASSERT_DEVICE := condor
+TARGET_OTA_ASSERT_DEVICE := xt1021,xt1022,xt1025,condor_umts,condor
 
 # Recovery
 TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/rootdir/etc/fstab.qcom
