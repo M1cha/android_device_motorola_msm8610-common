@@ -124,7 +124,12 @@ PRODUCT_COPY_FILES += \
 # QCOM Display
 PRODUCT_PROPERTY_OVERRIDES += \
     debug.sf.fb_always_on=1 \
-    ro.hdmi.enable=true
+    debug.composition.type=gpu \
+    debug.gralloc.map_fb_memory=0 \
+    debug.hwc.dynThreshold=1.5 \
+    persist.hwc.mdpcomp.enable=false \
+    ro.hdmi.enable=true \
+    persist.gralloc.cp.level3=1
 
 # Media
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -135,21 +140,22 @@ PRODUCT_PROPERTY_OVERRIDES += \
     media.stagefright.enable-fma2dp=true \
     media.stagefright.enable-scan=true \
     mmp.enable.3g2=true \
-    ro.audio.fm_max_volume=4096 \
+    ro.audio.fm_max_volume=2624 \
     ro.qualcomm.cabl=0 \
     use.voice.path.for.pcm.voip=true \
     qcom.bt.le_dev_pwr_class=1 \
     ro.qc.sdk.audio.ssr=false \
+    persist.audio.fluence.mode=0 \
+    ro.qc.sdk.audio.fluencetype=none \
     persist.audio.fluence.voicecall=true \
     persist.audio.fluence.voicerec=false \
-    ro.qc.sdk.audio.fluencetype=fluence \
-    persist.audio.fluence.speaker=true \
+    persist.audio.fluence.speaker=false \
     use.voice.path.for.pcm.voip=true \
     use.dedicated.device.for.voip=true \
     audio.offload.buffer.size.kb=32 \
     audio.offload.gapless.enabled=true \
     av.offload.enable=true \
-    mm.enable.smoothstreaming=true \
+    media.aac_51_output_enabled=true \
     qcom.hw.aac.encoder=true
 
 # Misc
@@ -162,10 +168,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.usb.bpt_adb=0x2e29 \
     ro.usb.bpteth=0x2e2a \
     ro.usb.bpteth_adb=0x2e2b \
-    persist.gps.qc_nlp_in_use=0 \
+    ro.qc.sdk.izat.premium_enabled=1 \
+    ro.qc.sdk.izat.service_mask=0x5 \
+    persist.gps.qc_nlp_in_use=1 \
+    persist.loc.nlp_name=com.qualcomm.services.location \
     persist.fuse_sdcard=true \
     ro.crypto.fuse_sdcard=true \
-    ro.nfc.port=I2C \
     ro.cwm.forbid_format="/fsg,/firmware,/persist,/boot"
 
 # Radio
@@ -185,7 +193,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
 
 # QCOM Display
 PRODUCT_PROPERTY_OVERRIDES += \
-    ro.sf.lcd_density=320
+    ro.sf.lcd_density=240
 
 # QC Perf
 PRODUCT_PROPERTY_OVERRIDES += \
