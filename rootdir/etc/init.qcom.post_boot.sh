@@ -246,10 +246,7 @@ esac
 
 case "$target" in
     "msm8974")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_dig
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_mem
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
@@ -270,6 +267,7 @@ case "$target" in
         echo 1 > /sys/module/msm_pm/modes/cpu1/retention/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/retention/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu3/retention/idle_enabled
+        echo 1 > /sys/module/msm_show_resume_irq/parameters/debug_mask
         echo 0 > /sys/module/msm_thermal/core_control/enabled
         echo 1 > /sys/devices/system/cpu/cpu1/online
         echo 1 > /sys/devices/system/cpu/cpu2/online
@@ -340,11 +338,8 @@ esac
 
 case "$target" in
     "msm8226")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        soc_revision=`cat /sys/devices/soc0/revision`
-        if [ "$soc_revision" != "1.0" ]; then
-                echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        fi
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
+	soc_revision=`cat /sys/devices/soc0/revision`
 	product=`getprop ro.boot.device`
 	if [ "$product" == "falcon" ]; then
 		if [ "$soc_revision" == "1.0" ]; then
@@ -364,30 +359,19 @@ case "$target" in
         echo 1 > /sys/module/msm_pm/modes/cpu2/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu3/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled
+        echo 1 > /sys/module/msm_show_resume_irq/parameters/debug_mask
         echo 1 > /sys/devices/system/cpu/cpu1/online
         echo 1 > /sys/devices/system/cpu/cpu2/online
         echo 1 > /sys/devices/system/cpu/cpu3/online
-        echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-        echo 50000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-        echo 90 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-        echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
-        echo 2 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-        echo 70 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core
-        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core
-        echo 787200 > /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq
-        echo 300000 > /sys/devices/system/cpu/cpufreq/ondemand/sync_freq
-        echo 80 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load
         echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
         # add read permission to max cpu frequency interface
         case "$debuggable" in
             "1")
-                chmod 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+                chmod -h 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
             ;;
         esac
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-        echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h root.system /sys/devices/system/cpu/cpu1/online
         chown -h root.system /sys/devices/system/cpu/cpu2/online
         chown -h root.system /sys/devices/system/cpu/cpu3/online
@@ -399,10 +383,7 @@ esac
 
 case "$target" in
     "msm8610")
-        echo 2 > /sys/module/lpm_resources/enable_low_power/l2
-        echo 1 > /sys/module/lpm_resources/enable_low_power/pxo
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_dig
-        echo 1 > /sys/module/lpm_resources/enable_low_power/vdd_mem
+        echo 4 > /sys/module/lpm_levels/enable_low_power/l2
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu1/power_collapse/suspend_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu2/power_collapse/suspend_enabled
@@ -416,20 +397,10 @@ case "$target" in
         echo 1 > /sys/module/msm_pm/modes/cpu2/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu3/standalone_power_collapse/idle_enabled
         echo 1 > /sys/module/msm_pm/modes/cpu0/power_collapse/idle_enabled
+        echo 1 > /sys/module/msm_show_resume_irq/parameters/debug_mask
         echo 1 > /sys/devices/system/cpu/cpu1/online
         echo 1 > /sys/devices/system/cpu/cpu2/online
         echo 1 > /sys/devices/system/cpu/cpu3/online
-        echo "ondemand" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-        echo 50000 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_rate
-        echo 90 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold
-        echo 1 > /sys/devices/system/cpu/cpufreq/ondemand/io_is_busy
-        echo 2 > /sys/devices/system/cpu/cpufreq/ondemand/sampling_down_factor
-        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential
-        echo 70 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_multi_core
-        echo 10 > /sys/devices/system/cpu/cpufreq/ondemand/down_differential_multi_core
-        echo 787200 > /sys/devices/system/cpu/cpufreq/ondemand/optimal_freq
-        echo 300000 > /sys/devices/system/cpu/cpufreq/ondemand/sync_freq
-        echo 80 > /sys/devices/system/cpu/cpufreq/ondemand/up_threshold_any_cpu_load
         echo 300000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
         chown -h system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq

@@ -7,10 +7,12 @@ on early-init
     # Create modem FSG mount point
     mkdir /fsg 755 root root
 
-    chown system system /sys/kernel/debug
-    chmod 0775 /sys/kernel/debug
-
 on init
+    # uSD slot support
+    mkdir /mnt/media_rw/sdcard1 0700 media_rw media_rw
+    mkdir /storage/sdcard1 0700 root root
+    export SECONDARY_STORAGE /storage/sdcard1
+
     # Configure coredump
     write /proc/sys/kernel/core_pattern "|/system/bin/coredump %e %p %t"
     write /proc/self/coredump_filter "0x7f"
@@ -18,15 +20,6 @@ on init
     # Setup kernel dropbox permissions so that dropboxd can utilize it
     chown root diag /sys/kernel/dropbox/event
     chown root diag /sys/kernel/dropbox/data
-
-    # AK9863 Magnetometer
-    chown compass compass /sys/class/compass/akm8963/enable_acc
-    chown compass compass /sys/class/compass/akm8963/enable_mag
-    chown compass compass /sys/class/compass/akm8963/enable_ori
-    chown compass compass /sys/class/compass/akm8963/delay_acc
-    chown compass compass /sys/class/compass/akm8963/delay_mag
-    chown compass compass /sys/class/compass/akm8963/delay_ori
-    chown compass compass /sys/class/compass/akm8963/accel
 
     # CT406 Light sensor and proximity
     chown system system /sys/module/ct406/parameters/als_enable
@@ -45,14 +38,14 @@ on init
 on fs
     # Mount modem FSG partition
     wait /dev/block/platform/msm_sdcc.1/by-name/fsg
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/fsg /fsg ro nosuid nodev barrier=0
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/fsg /fsg ro nosuid nodev barrier=0 defcontext=u:object_r:modem_file:s0
 
     #Backup ramconsole on abnormal reboot.
     copy /proc/last_kmsg /data/dontpanic/last_kmsg
     chown root log /data/dontpanic/last_kmsg
     chmod 0640 /data/dontpanic/last_kmsg
 
-    # Set correct permissions for HOB, DHOB
+    # Set correct permissions for HOB, DHOB, CLOGO
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/hob
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/dhob
     exec /system/bin/chmod -L 660 /dev/block/platform/msm_sdcc.1/by-name/clogo
@@ -67,6 +60,15 @@ on fs
     # Set permissions for BL logs
     exec /system/bin/chmod -L 640 /dev/block/platform/msm_sdcc.1/by-name/logs
     exec /system/bin/chown -L root:system /dev/block/platform/msm_sdcc.1/by-name/logs
+
+on fs-no-emulation
+    mount rootfs rootfs / rw remount
+    rm /sdcard
+    rm /mnt/sdcard
+    rm /storage/sdcard0
+    symlink /storage/sdcard1 /sdcard
+    symlink /storage/sdcard1 /mnt/sdcard
+    mount rootfs rootfs / ro remount
 
 on post-fs-data
     # Trigger the defuse tool
@@ -86,12 +88,7 @@ on post-fs-data
     chmod 0770 /pds/public/atvc
     mkdir /data/local/dbvc 0750 mot_tcmd shell
     mkdir /data/local/atvc 0775 mot_tcmd shell
-
-    # Wifi
-    restorecon /data/hostapd
-    restorecon /data/misc/wifi/hostapd/wlan0
-
-   # Create moodle directory that MOODLE APP can write to
+    # Create moodle directory that MOT_MOODLE can write to
     mkdir /data/local/moodle 0770 graphics mot_tcmd
 
     # services directory for activation
@@ -119,6 +116,9 @@ on post-fs-data
     mkdir /data/ss-ram-dumps 0750 radio log
     mkdir /data/ss-ram-dumps/bp-dumps 0750 radio log
 
+    # Create directory for cutback
+    mkdir /data/misc/cutback 0770 radio wifi
+
     # To remove apanic proc entry
     write /proc/apanic_console 1
 
@@ -133,8 +133,6 @@ on post-fs-data
 
     start batt_health
 
-    # Motorola Charge_only_mode
-    exec /system/bin/sh /system/bin/moto_com.sh
 
 service batt_health /system/bin/batt_health
     class main
@@ -143,11 +141,19 @@ service batt_health /system/bin/batt_health
 on early-boot
 # Annotate panics with helpful information
      exec /system/bin/apanic_annotate.sh build
+# Motorola Charge_only_mode
+    exec /system/bin/sh /system/bin/moto_com.sh
 
 on boot
     # Change ownership and permission for vibrator
     chown system system /sys/class/timed_output/vibrator/enable
     chmod 0660 /sys/class/timed_output/vibrator/enable
+
+    # Change ownership and permission for accelerometer
+    chown system system /sys/class/input/event1/device/device/enable
+    chmod 0660 /sys/class/input/event1/device/device/enable
+    chown system system /sys/class/input/event1/device/device/poll_delay
+    chmod 0660 /sys/class/input/event1/device/device/poll_delay
 
     # initialize kernel dynamic debugging settings
     copy /system/etc/debug_control.conf /sys/kernel/debug/dynamic_debug/control
@@ -156,52 +162,42 @@ on boot
     mkdir /data/aplogd 0750 log log
 
     # Change the ownership of touch screen files for tcmd
-    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/drv_irq
-    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/hw_irqstat
-    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/5-0020/reset
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/1-0020/drv_irq
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/1-0020/hw_irqstat
+    chown root mot_tcmd /sys/bus/i2c/drivers/synaptics_dsx_i2c/1-0020/reset
 
     # Change ownership and permission for led
-    chown system system /sys/class/leds/red/brightness
-    chown system system /sys/class/leds/red/blink
-    chown system system /sys/class/leds/green/brightness
-    chown system system /sys/class/leds/blue/brightness
     chown system system /sys/class/leds/white/brightness
-    chown system system /sys/class/leds/white/blink
     chown system system /sys/class/leds/rgb/control
     chown system system /sys/class/leds/led:flash_0/brightness
     chown system system /sys/class/leds/charging/brightness
-    chmod 0664 /sys/class/leds/red/brightness
-    chmod 0664 /sys/class/leds/red/blink
-    chmod 0664 /sys/class/leds/green/brightness
-    chmod 0664 /sys/class/leds/blue/brightness
     chmod 0664 /sys/class/leds/white/brightness
-    chmod 0664 /sys/class/leds/white/blink
     chmod 0664 /sys/class/leds/rgb/control
     chmod 0664 /sys/class/leds/led:flash_0/brightness
     chmod 0664 /sys/class/leds/charging/brightness
     chmod 0664 /sys/class/leds/lcd-backlight/brightness
 
-    # Optimize TCP parameters for QCOM-8226 products without LTE support
+    # Optimize TCP parameters for QCOM-8x10 products without LTE support
     # This init file will override the values defined in init.rc file.
     # Carrier specific init.<carrier>.rc file will override this file.
     # ReadMin, ReadInitial, ReadMax, WriteMin, WriteInitial, WriteMax,
     setprop net.tcp.buffersize.default 131072,262144,1048576,4096,16384,262144
     setprop net.tcp.buffersize.wifi 131072,262144,3145728,4096,221184,3145728
-    setprop net.tcp.buffersize.umts 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.edge 16384,32768,131070,4096,16384,65536
+    setprop net.tcp.buffersize.umts 131072,262144,1452032,4096,16384,399360
+    setprop net.tcp.buffersize.edge 16384,32768,131072,4096,16384,65536
     setprop net.tcp.buffersize.gprs 4096,8192,24576,4096,8192,24576
-    setprop net.tcp.buffersize.hspa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hsdpa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hsupa 131072,262144,1452023,4096,16384,399360
-    setprop net.tcp.buffersize.hspap 131072,262144,1452023,4096,16384,399360
+    setprop net.tcp.buffersize.hspa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsdpa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hsupa 131072,262144,2441216,4096,16384,399360
+    setprop net.tcp.buffersize.hspap 131072,262144,2441216,4096,16384,399360
     setprop net.tcp.buffersize.cdma  4096,12288,49152,4096,12288,49152
-    setprop net.tcp.buffersize.1xrtt 16384,32768,131070,4096,16384,102400
-    setprop net.tcp.buffersize.evdo  16384,32768,131070,4096,16384,102400
+    setprop net.tcp.buffersize.1xrtt 16384,32768,131072,4096,16384,102400
+    setprop net.tcp.buffersize.evdo  16384,32768,131072,4096,16384,102400
     setprop net.tcp.buffersize.evdo_b 131072,262144,1048576,4096,16384,524288
     setprop net.tcp.buffersize.ehrpd  131072,262144,1048576,4096,16384,524288
-    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131070
-    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131070
-    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,1452032
+    setprop net.tcp.buffersize.2ghotspot 4096,16384,65536,16384,32768,131072
+    setprop net.tcp.buffersize.2ghotspot2 4096,16384,102400,16384,32768,131072
+    setprop net.tcp.buffersize.3ghotspot 4096,16384,399360,131072,262144,2441216
     setprop net.tcp.buffersize.3ghotspot2 4096,16384,524288,131072,262144,1048576
 
     # Assign TCP buffer thresholds to be ceiling value of technology maximums
@@ -222,6 +218,17 @@ on boot
     write /sys/bus/msm_subsys/devices/subsys1/restart_level related
     write /sys/bus/msm_subsys/devices/subsys2/restart_level related
     write /sys/bus/msm_subsys/devices/subsys3/restart_level related
+
+on property:ro.config.low_ram=true
+    # Configure and Enable KSM
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1
+
+    # Swap in only 1 page at a time (zram enabled)
+    write /proc/sys/vm/page-cluster 0
+
+    swapon_all /fstab.zram
 
 service ftmipcd /system/bin/ftmipcd
     user radio
@@ -256,9 +263,9 @@ on property:persist.sys.diag_mdlog.on=0
 
 service diag_mdlog /system/bin/diag_mdlog-wrap
     class main
-    socket mdlog_cmd stream 0660 system diag
+    socket mdlog_cmd stream 0660 log diag
     user log
-    group log sdcard_rw sdcard_r media_rw qcom_diag
+    group log sdcard_rw sdcard_r media_rw qcom_diag mount
     disabled
 
 service dropboxd /system/bin/dropboxd
@@ -266,25 +273,23 @@ service dropboxd /system/bin/dropboxd
     user diag
     group diag
 
-
-on property:installd.post_fs_data_ready=1
-    exec /system/bin/refuse
+service fuse_sdcard1 /system/bin/sdcard -u 1023 -g 1023 -d /mnt/media_rw/sdcard1 /storage/sdcard1
+    class late_start
+    disabled
 
 service mmi-boot-sh /system/bin/sh /init.mmi.boot.sh
     class core
     user root
     oneshot
 
-service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics melfas
+service mmi-touch-sh /system/bin/sh /init.mmi.touch.sh synaptics
     class late_start
     user root
     oneshot
 
-# Magnetometer
-service akmd8963 /system/bin/akmd8963
-    class main
-    user compass
-    group compass misc input
+on property:ro.secure=0
+    # disable dmesg restrict for insecure builds
+    write /proc/sys/kernel/dmesg_restrict 0
 
 on property:ro.debuggable=1
     # disable dmesg restrict in eng/userdebug build
